@@ -1,0 +1,122 @@
+
+<div
+  class="ticket-details"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="ticket-dialog-title"
+>
+  <div class="modal-header">
+    <div>
+      <h2 id="ticket-dialog-title">
+        Ticket #{{ ticket.id }}
+      </h2>
+      <p>{{ ticket.title }}</p>
+    </div>
+
+    <button
+      type="button"
+      class="close-btn"
+      aria-label="Close ticket details"
+      (click)="closeModal()"
+    >
+      &times;
+    </button>
+  </div>
+
+  <div class="modal-body">
+
+    <div class="details-grid">
+      <div>
+        <label>Category</label>
+        <p>{{ ticket.category }}</p>
+      </div>
+
+      <div>
+        <label>Priority</label>
+        <p>{{ ticket.priority }}</p>
+      </div>
+
+      <div>
+        <label>Requester</label>
+        <p>{{ ticket.requesterName }}</p>
+      </div>
+
+      <div>
+        <label>Email</label>
+        <p>{{ ticket.requesterEmail }}</p>
+      </div>
+
+      <div>
+        <label>Created At</label>
+        <p>{{ ticket.createdAt }}</p>
+      </div>
+
+      <div>
+        <label>Updated At</label>
+        <p>{{ ticket.updatedAt }}</p>
+      </div>
+    </div>
+
+    <div class="description-section">
+      <label>Description</label>
+      <p>{{ ticket.description }}</p>
+    </div>
+
+    <form
+      [formGroup]="updateForm"
+      (ngSubmit)="saveChanges()"
+    >
+      <div class="form-group">
+        <label for="ticketStatus">Status</label>
+
+        <select
+          id="ticketStatus"
+          formControlName="status"
+        >
+          <option value="OPEN">Open</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="resolutionNote">
+          Resolution Note
+          @if (updateForm.controls.status.value === 'RESOLVED') {
+            <span class="required">*</span>
+          }
+        </label>
+
+        <textarea
+          id="resolutionNote"
+          formControlName="resolutionNote"
+          rows="4"
+          placeholder="Enter resolution details"
+        ></textarea>
+      </div>
+
+      @if (errorMessage) {
+        <p class="error-message">{{ errorMessage }}</p>
+      }
+
+      @if (successMessage) {
+        <p class="success-message">{{ successMessage }}</p>
+      }
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="cancel-btn"
+          (click)="closeModal()"
+        >
+          Close
+        </button>
+
+        <button type="submit" class="save-btn">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

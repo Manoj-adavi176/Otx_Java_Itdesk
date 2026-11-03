@@ -1,0 +1,110 @@
+
+<section class="create-ticket-page">
+  <h2>Create Support Ticket</h2>
+  <p class="subtitle">
+    Submit a new IT support request.
+  </p>
+
+  <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()" novalidate>
+
+    <div class="form-group">
+      <label for="title">Ticket Title *</label>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        placeholder="Enter ticket title"
+      />
+      @if (ticketForm.controls.title.touched &&
+           ticketForm.controls.title.invalid) {
+        <small>Ticket title is required.</small>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description *</label>
+      <textarea
+        id="description"
+        formControlName="description"
+        rows="4"
+        placeholder="Describe your issue"
+      ></textarea>
+      @if (ticketForm.controls.description.touched &&
+           ticketForm.controls.description.invalid) {
+        <small>Description is required.</small>
+      }
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="category">Category *</label>
+        <select id="category" formControlName="category">
+          <option value="">Select category</option>
+          <option value="HARDWARE">Hardware</option>
+          <option value="SOFTWARE">Software</option>
+          <option value="NETWORK">Network</option>
+          <option value="ACCESS">Access</option>
+        </select>
+        @if (ticketForm.controls.category.touched &&
+             ticketForm.controls.category.invalid) {
+          <small>Select a category.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="priority">Priority *</label>
+        <select id="priority" formControlName="priority">
+          <option value="">Select priority</option>
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+        </select>
+        @if (ticketForm.controls.priority.touched &&
+             ticketForm.controls.priority.invalid) {
+          <small>Select a priority.</small>
+        }
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="requesterName">Requester Name *</label>
+        <input
+          id="requesterName"
+          type="text"
+          formControlName="requesterName"
+          placeholder="Enter your name"
+        />
+        @if (ticketForm.controls.requesterName.touched &&
+             ticketForm.controls.requesterName.invalid) {
+          <small>Requester name is required.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="requesterEmail">Requester Email *</label>
+        <input
+          id="requesterEmail"
+          type="email"
+          formControlName="requesterEmail"
+          placeholder="name@example.com"
+        />
+        @if (ticketForm.controls.requesterEmail.touched &&
+             ticketForm.controls.requesterEmail.invalid) {
+          <small>
+            @if (ticketForm.controls.requesterEmail.hasError('required')) {
+              Email is required.
+            } @else {
+              Enter a valid email address.
+            }
+          </small>
+        }
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit">Create Ticket</button>
+    </div>
+
+  </form>
+</section>

@@ -1,0 +1,80 @@
+
+<section class="dashboard">
+
+  <div class="dashboard-header">
+    <div>
+      <h2>Dashboard</h2>
+      <p>Overview of IT support requests</p>
+    </div>
+
+    <a routerLink="/tickets/new" class="create-btn">
+      + Create Ticket
+    </a>
+  </div>
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <p>Total Tickets</p>
+      <h3>{{ totalTickets }}</h3>
+    </div>
+
+    <div class="stat-card open">
+      <p>Open Tickets</p>
+      <h3>{{ openTickets }}</h3>
+    </div>
+
+    <div class="stat-card progress">
+      <p>In Progress</p>
+      <h3>{{ inProgressTickets }}</h3>
+    </div>
+
+    <div class="stat-card resolved">
+      <p>Resolved</p>
+      <h3>{{ resolvedTickets }}</h3>
+    </div>
+
+  </div>
+
+  <div class="recent-section">
+    <div class="section-header">
+      <h3>Recent Tickets</h3>
+      <a routerLink="/tickets">View All</a>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (ticket of recentTickets; track ticket.id) {
+            <tr>
+              <td>#{{ ticket.id }}</td>
+              <td>
+                <a [routerLink]="['/tickets', ticket.id]">
+                  {{ ticket.title }}
+                </a>
+              </td>
+              <td>{{ ticket.priority }}</td>
+              <td>{{ ticket.status }}</td>
+              <td>{{ ticket.createdAt | date:'mediumDate' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">No tickets found.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>

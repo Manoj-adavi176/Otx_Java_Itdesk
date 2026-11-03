@@ -1,0 +1,24 @@
+
+<aside class="sidebar">
+  <div class="brand">
+    <h2>IT Helpdesk</h2>
+    <p>Support Management</p>
+  </div>
+
+  <nav aria-label="Main navigation">
+    <a
+      routerLink="/tickets"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: false }"
+    >
+      All Tickets
+    </a>
+
+    <a
+      routerLink="/tickets/new"
+      routerLinkActive="active"
+    >
+      Create Ticket
+    </a>
+  </nav>
+</aside>

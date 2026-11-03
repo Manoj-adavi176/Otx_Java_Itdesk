@@ -1,0 +1,32 @@
+
+# Backend - Maven and Java
+**/target/
+**/.idea/
+**/*.iml
+**/*.class
+
+# Local H2 database
+**/data/
+*.mv.db
+*.trace.db
+
+# Frontend - Angular
+**/node_modules/
+**/dist/
+**/.angular/
+**/coverage/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+**/application-local.properties
+**/application-local.yml
+**/application-local.yaml
+**/application-secret.properties
+**/application-secrets.properties
+
+# Editors and OS
+.vscode/
+.DS_Store
+Thumbs.db

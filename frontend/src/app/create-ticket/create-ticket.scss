@@ -1,0 +1,95 @@
+
+.create-ticket-page {
+  max-width: 900px;
+  margin: 0 auto;
+
+  h2 {
+    color: #142944;
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: #64748b;
+    margin-bottom: 28px;
+  }
+}
+
+form {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 22px;
+
+  label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #334155;
+  }
+
+  input,
+  textarea,
+  select {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+    background: white;
+    color: #1e293b;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+
+  small {
+    color: #dc2626;
+    margin-top: 6px;
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: #1d4ed8;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  form {
+    padding: 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
