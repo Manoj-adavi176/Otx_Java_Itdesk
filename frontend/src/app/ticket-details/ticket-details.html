@@ -17,6 +17,7 @@
       type="button"
       class="close-btn"
       aria-label="Close ticket details"
+      [disabled]="saving"
       (click)="closeModal()"
     >
       &times;
@@ -72,6 +73,7 @@
         <select
           id="ticketStatus"
           formControlName="status"
+          [disabled]="saving"
         >
           <option value="OPEN">Open</option>
           <option value="IN_PROGRESS">In Progress</option>
@@ -83,6 +85,7 @@
       <div class="form-group">
         <label for="resolutionNote">
           Resolution Note
+
           @if (updateForm.controls.status.value === 'RESOLVED') {
             <span class="required">*</span>
           }
@@ -93,28 +96,38 @@
           formControlName="resolutionNote"
           rows="4"
           placeholder="Enter resolution details"
+          [readonly]="saving"
         ></textarea>
       </div>
 
       @if (errorMessage) {
-        <p class="error-message">{{ errorMessage }}</p>
+        <p class="error-message" role="alert">
+          {{ errorMessage }}
+        </p>
       }
 
       @if (successMessage) {
-        <p class="success-message">{{ successMessage }}</p>
+        <p class="success-message" role="status">
+          {{ successMessage }}
+        </p>
       }
 
       <div class="modal-actions">
         <button
           type="button"
           class="cancel-btn"
+          [disabled]="saving"
           (click)="closeModal()"
         >
           Close
         </button>
 
-        <button type="submit" class="save-btn">
-          Save Changes
+        <button
+          type="submit"
+          class="save-btn"
+          [disabled]="saving"
+        >
+          {{ saving ? 'Saving...' : 'Save Changes' }}
         </button>
       </div>
     </form>

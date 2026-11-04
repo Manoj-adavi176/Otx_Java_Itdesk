@@ -1,8 +1,9 @@
 
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
 
 import { Ticket } from '../../models/ticket.model';
-import { MOCK_TICKETS } from '../../models/mock-tickets';
 
 export type CreateTicketRequest = Pick<
   Ticket,
@@ -14,84 +15,84 @@ export type CreateTicketRequest = Pick<
   | 'requesterEmail'
 >;
 
-export type UpdateTicketRequest = Partial<
-  Pick<Ticket, 'status' | 'resolutionNote'>
->;
+export type UpdateTicketRequest = {
+  status: Ticket['status'];
+  resolutionNote: string | null;
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class TicketService {
 
-  private readonly ticketsState = signal<Ticket[]>(
-    MOCK_TICKETS.map(ticket => ({ ...ticket }))
-  );
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = '/api/tickets';
+
+  private readonly ticketsState = signal<Ticket[]>([]);
 
   readonly tickets = this.ticketsState.asReadonly();
 
+  // GET /api/tickets
+  getAllTickets(): Observable<Ticket[]> {
+    return this.http.get<Ticket[]>(this.apiUrl).pipe(
+      tap(tickets => this.ticketsState.set(tickets))
+    );
+  }
+
+  // Read an already-loaded ticket from Angular state
   getTicketById(id: number): Ticket | undefined {
-    return this.ticketsState().find(ticket => ticket.id === id);
+    return this.ticketsState().find(
+      ticket => ticket.id === id
+    );
   }
 
-  createTicket(request: CreateTicketRequest): Ticket {
-    const tickets = this.ticketsState();
-
-    const nextId = tickets.reduce(
-      (max, ticket) => Math.max(max, ticket.id),
-      0
-    ) + 1;
-
-    const now = new Date().toISOString();
-
-    const newTicket: Ticket = {
-      ...request,
-      id: nextId,
-      status: 'OPEN',
-      resolutionNote: null,
-      createdAt: now,
-      updatedAt: now
-    };
-
-    this.ticketsState.update(current => [
-      ...current,
-      newTicket
-    ]);
-
-    return newTicket;
+  // GET /api/tickets/{id}
+  fetchTicketById(id: number): Observable<Ticket> {
+    return this.http.get<Ticket>(
+      `${this.apiUrl}/${id}`
+    ).pipe(
+      tap(ticket => this.upsertTicket(ticket))
+    );
   }
 
+  // POST /api/tickets
+  createTicket(
+    request: CreateTicketRequest
+  ): Observable<Ticket> {
+    return this.http.post<Ticket>(
+      this.apiUrl,
+      request
+    ).pipe(
+      tap(ticket => this.upsertTicket(ticket))
+    );
+  }
+
+  // PUT /api/tickets/{id}
   updateTicket(
     id: number,
     request: UpdateTicketRequest
-  ): Ticket {
-
-    const existingTicket = this.getTicketById(id);
-
-    if (!existingTicket) {
-      throw new Error(`Ticket with ID ${id} not found`);
-    }
-
-    const updatedTicket: Ticket = {
-      ...existingTicket,
-      ...request,
-      updatedAt: new Date().toISOString()
-    };
-
-    if (
-      updatedTicket.status === 'RESOLVED' &&
-      !updatedTicket.resolutionNote?.trim()
-    ) {
-      throw new Error(
-        'Resolution note is required for RESOLVED tickets'
-      );
-    }
-
-    this.ticketsState.update(tickets =>
-      tickets.map(ticket =>
-        ticket.id === id ? updatedTicket : ticket
-      )
+  ): Observable<Ticket> {
+    return this.http.put<Ticket>(
+      `${this.apiUrl}/${id}`,
+      request
+    ).pipe(
+      tap(ticket => this.upsertTicket(ticket))
     );
+  }
 
-    return updatedTicket;
+  private upsertTicket(ticket: Ticket): void {
+    this.ticketsState.update(tickets => {
+      const exists = tickets.some(
+        current => current.id === ticket.id
+      );
+
+      if (exists) {
+        return tickets.map(current =>
+          current.id === ticket.id ? ticket : current
+        );
+      }
+
+      return [...tickets, ticket];
+    });
   }
 }

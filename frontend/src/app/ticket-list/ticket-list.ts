@@ -3,6 +3,8 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
+  OnDestroy,
   signal
 } from '@angular/core';
 
@@ -15,7 +17,10 @@ import {
   RouterLink
 } from '@angular/router';
 
+import { Subscription } from 'rxjs';
+
 import {
+  Ticket,
   TicketStatus,
   TicketPriority
 } from '../models/ticket.model';
@@ -34,11 +39,14 @@ import { TicketDetails } from '../ticket-details/ticket-details';
   templateUrl: './ticket-list.html',
   styleUrl: './ticket-list.scss'
 })
-export class TicketList {
+export class TicketList implements OnInit, OnDestroy {
 
   private readonly ticketService = inject(TicketService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+
+  private readonly subscriptions = new Subscription();
+  private ticketRequest?: Subscription;
 
   readonly tickets = this.ticketService.tickets;
 
@@ -46,16 +54,20 @@ export class TicketList {
   selectedStatus = signal<TicketStatus | 'ALL'>('ALL');
   selectedPriority = signal<TicketPriority | 'ALL'>('ALL');
 
+  loading = signal(false);
+  loadError = signal('');
+
+  detailsLoading = signal(false);
+  detailsError = signal('');
+  detailsNotFound = signal(false);
+
   readonly selectedTicketId = signal<number | null>(null);
+  readonly selectedTicketData = signal<Ticket | null>(null);
   readonly invalidTicketId = signal(false);
 
-  readonly selectedTicket = computed(() => {
-    const id = this.selectedTicketId();
-
-    return id === null
-      ? undefined
-      : this.ticketService.getTicketById(id);
-  });
+  readonly selectedTicket = computed(
+    () => this.selectedTicketData()
+  );
 
   readonly filteredTickets = computed(() => {
     const search = this.searchText().trim().toLowerCase();
@@ -80,27 +92,89 @@ export class TicketList {
     });
   });
 
-  constructor() {
-    this.route.paramMap.subscribe(params => {
-      const idParam = params.get('id');
+  ngOnInit(): void {
+    this.loadTickets();
 
-      if (idParam === null) {
-        this.selectedTicketId.set(null);
+    const routeSubscription = this.route.paramMap.subscribe(
+      params => {
+        const idParam = params.get('id');
+
+        this.ticketRequest?.unsubscribe();
+        this.selectedTicketData.set(null);
+        this.detailsError.set('');
+        this.detailsNotFound.set(false);
+        this.detailsLoading.set(false);
+
+        if (idParam === null) {
+          this.selectedTicketId.set(null);
+          this.invalidTicketId.set(false);
+          return;
+        }
+
+        const id = Number(idParam);
+
+        if (!Number.isSafeInteger(id) || id <= 0) {
+          this.selectedTicketId.set(null);
+          this.invalidTicketId.set(true);
+          return;
+        }
+
         this.invalidTicketId.set(false);
-        return;
+        this.selectedTicketId.set(id);
+        this.loadTicketDetails(id);
       }
+    );
 
-      const id = Number(idParam);
+    this.subscriptions.add(routeSubscription);
+  }
 
-      if (!Number.isSafeInteger(id) || id <= 0) {
-        this.selectedTicketId.set(null);
-        this.invalidTicketId.set(true);
-        return;
-      }
+  loadTickets(): void {
+    this.loading.set(true);
+    this.loadError.set('');
 
-      this.selectedTicketId.set(id);
-      this.invalidTicketId.set(false);
-    });
+    const subscription = this.ticketService
+      .getAllTickets()
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+        },
+        error: error => {
+          console.error('Failed to load tickets:', error);
+          this.loading.set(false);
+          this.loadError.set(
+            'Unable to load tickets from the backend.'
+          );
+        }
+      });
+
+    this.subscriptions.add(subscription);
+  }
+
+  loadTicketDetails(id: number): void {
+    this.detailsLoading.set(true);
+    this.detailsError.set('');
+    this.detailsNotFound.set(false);
+
+    this.ticketRequest = this.ticketService
+      .fetchTicketById(id)
+      .subscribe({
+        next: ticket => {
+          this.selectedTicketData.set(ticket);
+          this.detailsLoading.set(false);
+        },
+        error: error => {
+          this.detailsLoading.set(false);
+          console.error('Failed to load ticket:', error);
+
+          if (error.status === 404) {
+            this.detailsNotFound.set(true);
+          } else {
+            this.detailsError.set(
+              'Unable to load ticket details.'
+            );
+          }
+        }
+      });
   }
 
   openTicket(id: number): void {
@@ -112,12 +186,23 @@ export class TicketList {
   }
 
   onTicketSaved(): void {
-    // TicketService updates the shared signal automatically.
+    const updated = this.tickets().find(
+      ticket => ticket.id === this.selectedTicketId()
+    );
+
+    if (updated) {
+      this.selectedTicketData.set(updated);
+    }
   }
 
   clearFilters(): void {
     this.searchText.set('');
     this.selectedStatus.set('ALL');
     this.selectedPriority.set('ALL');
+  }
+
+  ngOnDestroy(): void {
+    this.ticketRequest?.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 }
