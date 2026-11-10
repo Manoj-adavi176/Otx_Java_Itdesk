@@ -1,4 +1,3 @@
-
 <aside class="sidebar">
   <div class="brand">
     <h2>IT Helpdesk</h2>
@@ -9,7 +8,8 @@
     <a
       routerLink="/tickets"
       routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: false }"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
     >
       All Tickets
     </a>
@@ -17,6 +17,8 @@
     <a
       routerLink="/tickets/new"
       routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
     >
       Create Ticket
     </a>

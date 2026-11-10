@@ -1,6 +1,5 @@
 package com.otx_project.itdesk.entity;
 
-
 import com.otx_project.itdesk.enums.Category;
 import com.otx_project.itdesk.enums.Priority;
 import com.otx_project.itdesk.enums.Status;

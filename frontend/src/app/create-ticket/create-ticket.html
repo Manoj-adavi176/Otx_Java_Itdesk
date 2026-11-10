@@ -1,22 +1,24 @@
 <section class="create-ticket-page">
   <h2>Create Support Ticket</h2>
-  <p class="subtitle">
-    Submit a new IT support request.
-  </p>
+  <p class="subtitle">Submit a new IT support request.</p>
 
-  <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()" novalidate>
-
+  <form
+    [formGroup]="ticketForm"
+    (ngSubmit)="onSubmit()"
+    novalidate
+  >
     <div class="form-group">
       <label for="title">Ticket Title *</label>
       <input
         id="title"
         type="text"
         formControlName="title"
+        maxlength="255"
         placeholder="Enter ticket title"
       />
-      @if (ticketForm.controls.title.touched &&
-           ticketForm.controls.title.invalid) {
-        <small>Ticket title is required.</small>
+
+      @if (fieldError('title'); as message) {
+        <small>{{ message }}</small>
       }
     </div>
 
@@ -26,11 +28,12 @@
         id="description"
         formControlName="description"
         rows="4"
+        maxlength="2000"
         placeholder="Describe your issue"
       ></textarea>
-      @if (ticketForm.controls.description.touched &&
-           ticketForm.controls.description.invalid) {
-        <small>Description is required.</small>
+
+      @if (fieldError('description'); as message) {
+        <small>{{ message }}</small>
       }
     </div>
 
@@ -44,8 +47,8 @@
           <option value="NETWORK">Network</option>
           <option value="ACCESS">Access</option>
         </select>
-        @if (ticketForm.controls.category.touched &&
-             ticketForm.controls.category.invalid) {
+
+        @if (fieldError('category')) {
           <small>Select a category.</small>
         }
       </div>
@@ -58,8 +61,8 @@
           <option value="MEDIUM">Medium</option>
           <option value="HIGH">High</option>
         </select>
-        @if (ticketForm.controls.priority.touched &&
-             ticketForm.controls.priority.invalid) {
+
+        @if (fieldError('priority')) {
           <small>Select a priority.</small>
         }
       </div>
@@ -72,11 +75,12 @@
           id="requesterName"
           type="text"
           formControlName="requesterName"
+          maxlength="255"
           placeholder="Enter your name"
         />
-        @if (ticketForm.controls.requesterName.touched &&
-             ticketForm.controls.requesterName.invalid) {
-          <small>Requester name is required.</small>
+
+        @if (fieldError('requesterName'); as message) {
+          <small>{{ message }}</small>
         }
       </div>
 
@@ -86,32 +90,26 @@
           id="requesterEmail"
           type="email"
           formControlName="requesterEmail"
+          maxlength="255"
           placeholder="name@example.com"
         />
-        @if (ticketForm.controls.requesterEmail.touched &&
-             ticketForm.controls.requesterEmail.invalid) {
-          <small>
-            @if (ticketForm.controls.requesterEmail.hasError('required')) {
-              Email is required.
-            } @else {
-              Enter a valid email address.
-            }
-          </small>
+
+        @if (fieldError('requesterEmail'); as message) {
+          <small>{{ message }}</small>
         }
       </div>
     </div>
 
-    @if (errorMessage) {
+    @if (errorMessage()) {
       <p class="error-message" role="alert">
-        {{ errorMessage }}
+        {{ errorMessage() }}
       </p>
     }
 
     <div class="form-actions">
-      <button type="submit" [disabled]="saving">
-        {{ saving ? 'Creating Ticket...' : 'Create Ticket' }}
+      <button type="submit" [disabled]="saving()">
+        {{ saving() ? 'Creating Ticket...' : 'Create Ticket' }}
       </button>
     </div>
-
   </form>
 </section>

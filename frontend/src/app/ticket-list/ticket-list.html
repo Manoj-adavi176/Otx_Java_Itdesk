@@ -1,5 +1,4 @@
 <section class="ticket-list-page">
-
   <div class="page-header">
     <div>
       <h2>All Tickets</h2>
@@ -11,12 +10,9 @@
     </a>
   </div>
 
-  <!-- Search and Filters -->
   <div class="filters">
-
     <div class="filter-group">
       <label for="searchText">Search Tickets</label>
-
       <input
         id="searchText"
         type="text"
@@ -28,7 +24,6 @@
 
     <div class="filter-group">
       <label for="statusFilter">Status</label>
-
       <select
         id="statusFilter"
         [ngModel]="selectedStatus()"
@@ -44,7 +39,6 @@
 
     <div class="filter-group">
       <label for="priorityFilter">Priority</label>
-
       <select
         id="priorityFilter"
         [ngModel]="selectedPriority()"
@@ -64,101 +58,92 @@
     >
       Clear Filters
     </button>
-
   </div>
 
-@if (loading()) {
-  <p>Loading tickets from server...</p>
-}
+  @if (loading()) {
+    <p role="status">Loading tickets from server...</p>
+  } @else if (loadError()) {
+    <p class="error-message" role="alert">
+      {{ loadError() }}
+    </p>
 
-@if (loadError()) {
-  <p class="error-message" role="alert">
-    {{ loadError() }}
-  </p>
+    <button type="button" (click)="loadTickets()">
+      Retry
+    </button>
+  } @else {
+    <div class="results-count">
+      Showing {{ filteredTickets().length }} of
+      {{ tickets().length }} tickets
+    </div>
 
-  <button type="button" (click)="loadTickets()">
-    Retry
-  </button>
-}
-
-  <!-- Results Count -->
-  <div class="results-count">
-    Showing {{ filteredTickets().length }} of
-    {{ tickets().length }} tickets
-  </div>
-
-  <!-- Tickets Table -->
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Category</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Created Date</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        @for (ticket of filteredTickets(); track ticket.id) {
+    <div class="table-container">
+      <table>
+        <thead>
           <tr>
-            <td>#{{ ticket.id }}</td>
-
-            <td>
-              <button
-                type="button"
-                class="ticket-link"
-                (click)="openTicket(ticket.id)"
-              >
-                {{ ticket.title }}
-              </button>
-            </td>
-
-            <td>{{ ticket.category }}</td>
-
-            <td>
-              <span
-                class="badge"
-                [class.priority-low]="ticket.priority === 'LOW'"
-                [class.priority-medium]="ticket.priority === 'MEDIUM'"
-                [class.priority-high]="ticket.priority === 'HIGH'"
-              >
-                {{ ticket.priority }}
-              </span>
-            </td>
-
-            <td>
-              <span
-                class="badge"
-                [class.status-open]="ticket.status === 'OPEN'"
-                [class.status-progress]="ticket.status === 'IN_PROGRESS'"
-                [class.status-resolved]="ticket.status === 'RESOLVED'"
-                [class.status-closed]="ticket.status === 'CLOSED'"
-              >
-                {{ ticket.status }}
-              </span>
-            </td>
-
-            <td>
-              {{ ticket.createdAt | date:'mediumDate' }}
-            </td>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Created Date</th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="empty-state">
-              No tickets found.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
 
+        <tbody>
+          @for (ticket of filteredTickets(); track ticket.id) {
+            <tr>
+              <td>#{{ ticket.id }}</td>
+
+              <td>
+                <button
+                  type="button"
+                  class="ticket-link"
+                  (click)="openTicket(ticket.id)"
+                >
+                  {{ ticket.title }}
+                </button>
+              </td>
+
+              <td>{{ ticket.category }}</td>
+
+              <td>
+                <span
+                  class="badge"
+                  [class.priority-low]="ticket.priority === 'LOW'"
+                  [class.priority-medium]="ticket.priority === 'MEDIUM'"
+                  [class.priority-high]="ticket.priority === 'HIGH'"
+                >
+                  {{ ticket.priority }}
+                </span>
+              </td>
+
+              <td>
+                <span
+                  class="badge"
+                  [class.status-open]="ticket.status === 'OPEN'"
+                  [class.status-progress]="ticket.status === 'IN_PROGRESS'"
+                  [class.status-resolved]="ticket.status === 'RESOLVED'"
+                  [class.status-closed]="ticket.status === 'CLOSED'"
+                >
+                  {{ ticket.status }}
+                </span>
+              </td>
+
+              <td>{{ ticket.createdAt | date:'mediumDate' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-state">
+                No tickets found.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </section>
 
-<!-- Loading ticket details -->
 @if (selectedTicketId() !== null && detailsLoading()) {
   <div class="modal-overlay">
     <div class="not-found-modal" role="status">
@@ -167,17 +152,17 @@
   </div>
 }
 
-<!-- Ticket Details -->
 @if (selectedTicket(); as ticket) {
   <div
     class="modal-overlay"
-    (click)="closeTicket()"
+    (click)="details.closeModal()"
   >
     <div
       class="modal-container"
       (click)="$event.stopPropagation()"
     >
       <app-ticket-details
+        #details
         [ticket]="ticket"
         (closed)="closeTicket()"
         (saved)="onTicketSaved()"
@@ -186,7 +171,6 @@
   </div>
 }
 
-<!-- Ticket Not Found -->
 @if (invalidTicketId() || detailsNotFound()) {
   <div class="modal-overlay">
     <div
@@ -196,7 +180,6 @@
       aria-labelledby="not-found-title"
     >
       <h2 id="not-found-title">Ticket Not Found</h2>
-
       <p>The requested ticket does not exist.</p>
 
       <button type="button" (click)="closeTicket()">
@@ -206,11 +189,14 @@
   </div>
 }
 
-<!-- Other backend errors -->
 @if (detailsError()) {
   <div class="modal-overlay">
-    <div class="not-found-modal" role="alertdialog"
-         aria-modal="true" aria-labelledby="details-error-title">
+    <div
+      class="not-found-modal"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="details-error-title"
+    >
       <h2 id="details-error-title">Unable to Load Ticket</h2>
 
       <p role="alert">{{ detailsError() }}</p>

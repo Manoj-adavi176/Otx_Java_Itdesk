@@ -135,7 +135,8 @@ export class TicketList implements OnInit, OnDestroy {
     const subscription = this.ticketService
       .getAllTickets()
       .subscribe({
-        next: () => {
+        next: (data) => {
+          console.log(data)
           this.loading.set(false);
         },
         error: error => {

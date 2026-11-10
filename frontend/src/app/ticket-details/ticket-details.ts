@@ -1,18 +1,17 @@
-
 import {
   Component,
   EventEmitter,
   Input,
-  Output,
   OnChanges,
+  Output,
   SimpleChanges,
-  inject
+  inject,
+  signal
 } from '@angular/core';
-
 import {
-  ReactiveFormsModule,
   FormControl,
   FormGroup,
+  ReactiveFormsModule,
   Validators
 } from '@angular/forms';
 
@@ -26,7 +25,6 @@ import { TicketService } from '../core/services/ticket';
   styleUrl: './ticket-details.scss'
 })
 export class TicketDetails implements OnChanges {
-
   @Input({ required: true }) ticket!: Ticket;
 
   @Output() closed = new EventEmitter<void>();
@@ -34,85 +32,96 @@ export class TicketDetails implements OnChanges {
 
   private readonly ticketService = inject(TicketService);
 
-  saving = false;
-  errorMessage = '';
-  successMessage = '';
+  readonly saving = signal(false);
+  readonly errorMessage = signal('');
+  readonly successMessage = signal('');
 
-  updateForm = new FormGroup({
+  readonly updateForm = new FormGroup({
     status: new FormControl<TicketStatus>('OPEN', {
       nonNullable: true,
       validators: [Validators.required]
     }),
-
     resolutionNote: new FormControl('', {
-      nonNullable: true
+      nonNullable: true,
+      validators: [Validators.maxLength(2000)]
     })
   });
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['ticket'] && this.ticket) {
-      this.updateForm.setValue({
+      this.updateForm.reset({
         status: this.ticket.status,
         resolutionNote: this.ticket.resolutionNote ?? ''
       });
 
-      this.errorMessage = '';
+      this.errorMessage.set('');
     }
   }
 
   saveChanges(): void {
-    if (this.saving) {
+    if (this.saving()) {
       return;
     }
 
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
-    const { status, resolutionNote } =
-      this.updateForm.getRawValue();
-
-    if (status === 'RESOLVED' && !resolutionNote.trim()) {
-      this.errorMessage =
-        'Resolution note is required when resolving a ticket.';
+    if (this.updateForm.invalid) {
+      this.updateForm.markAllAsTouched();
+      this.errorMessage.set(
+        'Select a status and keep the resolution note within 2000 characters.'
+      );
       return;
     }
 
-    this.saving = true;
+    const value = this.updateForm.getRawValue();
+    const note = value.resolutionNote.trim();
+
+    if (value.status === 'RESOLVED' && !note) {
+      this.errorMessage.set(
+        'Resolution note is required when resolving a ticket.'
+      );
+      return;
+    }
+
+    this.saving.set(true);
+    this.updateForm.disable();
 
     this.ticketService.updateTicket(this.ticket.id, {
-      status,
-      resolutionNote: resolutionNote.trim() || null
+      status: value.status,
+      // Send an empty string to intentionally clear an existing note.
+      resolutionNote: note
     }).subscribe({
       next: () => {
-        this.saving = false;
-        this.errorMessage = '';
-        this.successMessage =
-          'Ticket updated successfully.';
-
+        this.updateForm.enable();
+        this.saving.set(false);
+        this.errorMessage.set('');
+        this.successMessage.set('Ticket updated successfully.');
         this.saved.emit();
       },
-
-      error: (error) => {
-        this.saving = false;
-
+      error: error => {
         console.error('Ticket update failed:', error);
 
+        this.updateForm.enable();
+        this.saving.set(false);
+
         if (error.status === 400) {
-          this.errorMessage =
-            'Invalid update. Check the status and resolution note.';
+          this.errorMessage.set(
+            'Invalid update. Check the status and resolution note.'
+          );
         } else if (error.status === 404) {
-          this.errorMessage =
-            'Ticket not found in the database.';
+          this.errorMessage.set('Ticket not found in the database.');
         } else {
-          this.errorMessage =
-            'Unable to update ticket. Please try again.';
+          this.errorMessage.set(
+            'Unable to update ticket. Please try again.'
+          );
         }
       }
     });
   }
 
   closeModal(): void {
-    if (!this.saving) {
+    if (!this.saving()) {
       this.closed.emit();
     }
   }
